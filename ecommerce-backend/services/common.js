@@ -1,13 +1,16 @@
 const passport = require("passport");
 const nodemailer = require("nodemailer");
+const { env } = require("process");
+const { log } = require("console");
 
-const { EMAIL, PASSWORD } = require("../env.js");
+// const { EMAIL, PASSWORD } = require("../env.js");
+// console.log(process.env.PASSWORD, process.env.EMAIL);
 
 let config = {
   service: "gmail",
   auth: {
-    user: EMAIL,
-    pass: PASSWORD,
+    user: process.env.EMAIL,
+    pass: process.env.PASSWORD,
   },
 };
 
