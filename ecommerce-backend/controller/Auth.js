@@ -2,6 +2,8 @@ const { User } = require("../model/User");
 const crypto = require("crypto");
 const { sanitizeUser, sendMail } = require("../services/common");
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
+const bcrypt = require("bcryptjs");
 
 exports.createUser = async (req, res) => {
   try {
@@ -41,15 +43,45 @@ exports.createUser = async (req, res) => {
   }
 };
 
+// exports.loginUser = async (req, res) => {
+//   const user = req.user;
+//   res
+//     .cookie("jwt", user.token, {
+//       expires: new Date(Date.now() + 3600000),
+//       httpOnly: true,
+//     })
+//     .status(201)
+//     .json({ id: user.id, role: user.role });
+// };
+
 exports.loginUser = async (req, res) => {
-  const user = req.user;
-  res
-    .cookie("jwt", user.token, {
-      expires: new Date(Date.now() + 3600000),
-      httpOnly: true,
-    })
-    .status(201)
-    .json({ id: user.id, role: user.role });
+  const { email, password } = req.body;
+
+  const jwtSecret = process.env.JWT_SECRET_KEY;
+
+  try {
+    const oldUser = await User.findOne({ email });
+    if (!oldUser)
+      return res.status(404).json({ message: "User doesn't exist" });
+
+    const isPasswordCorrect = await bcrypt.compare(password, oldUser.password);
+
+    if (!isPasswordCorrect)
+      return res.status(400).json({ message: "Invalid credentials" });
+
+    const token = jwt.sign(
+      { email: oldUser.email, id: oldUser._id },
+      jwtSecret,
+      {
+        expiresIn: "8h",
+      }
+    );
+
+    res.status(200).json({ result: oldUser, token });
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
+    console.log(error);
+  }
 };
 
 exports.logout = async (req, res) => {

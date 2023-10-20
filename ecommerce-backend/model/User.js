@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 const userSchema = new Schema(
   {
     email: { type: String, required: true, unique: true },
-    password: { type: Buffer, required: true },
+    password: { type: String, required: true },
     imgpath: {
       type: String,
       required: true,
@@ -14,7 +14,7 @@ const userSchema = new Schema(
     // for addresses, we can make a separate Schema like orders. but in this case we are fine
     firstName: { type: String },
     lastName: { type: String },
-    salt: Buffer,
+    // salt: Buffer,
     resetPasswordToken: { type: String, default: "" },
   },
   { timestamps: true }
