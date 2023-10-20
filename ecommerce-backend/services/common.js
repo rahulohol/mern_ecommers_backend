@@ -1,4 +1,4 @@
-const passport = require("passport");
+// const passport = require("passport");
 const nodemailer = require("nodemailer");
 
 const { EMAIL, PASSWORD } = require("../env.js");
@@ -23,9 +23,9 @@ let transporter = nodemailer.createTransport(config);
 //   },
 // });
 
-exports.isAuth = (req, res, done) => {
-  return passport.authenticate("jwt");
-};
+// exports.isAuth = (req, res, done) => {
+//   return passport.authenticate("jwt");
+// };
 
 exports.sanitizeUser = (user) => {
   return { id: user.id, role: user.role };

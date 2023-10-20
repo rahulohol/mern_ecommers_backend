@@ -4,13 +4,10 @@ const server = express();
 const mongoose = require("mongoose");
 const cors = require("cors");
 const morgan = require("morgan");
-const session = require("express-session");
-const passport = require("passport");
-const LocalStrategy = require("passport-local").Strategy;
+
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-const JwtStrategy = require("passport-jwt").Strategy;
-const ExtractJwt = require("passport-jwt").ExtractJwt;
+
 const cookieParser = require("cookie-parser");
 const { createProduct } = require("./controller/Product");
 const productsRouter = require("./routes/Products");
