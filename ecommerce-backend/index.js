@@ -79,17 +79,21 @@ opts.secretOrKey = process.env.JWT_SECRET_KEY;
 server.use(morgan("dev"));
 // server.use(express.static(path.resolve(__dirname, "build")));
 server.use(cookieParser());
-// server.use(
-//   session({
-//     secret: process.env.SESSION_KEY,
-//     store: new MongoStore({
-//       mongooseConnection: mongoose.connection,
-//       collection: "sessions",
-//     }),
-//     resave: false,
-//     saveUninitialized: false,
-//   })
-// );
+
+const memoryStore = new session.MemoryStore();
+
+server.use(
+  session({
+    secret: process.env.SESSION_KEY,
+    store: memoryStore,
+    // store: new MongoStore({
+    //   mongooseConnection: mongoose.connection,
+    //   collection: "sessions",
+    // }),
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 // console.log(process.env.SESSION_KEY);
 // server.use(
 //   session({
@@ -215,7 +219,7 @@ server.post("/create-payment-intent", async (req, res) => {
     clientSecret: paymentIntent.client_secret,
   });
 });
-
+console.log(process.env.MONGODB_URL);
 async function main() {
   try {
     await mongoose.connect(process.env.MONGODB_URL, {
