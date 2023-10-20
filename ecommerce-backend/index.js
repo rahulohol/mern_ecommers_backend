@@ -89,14 +89,14 @@ server.use(cookieParser());
 //     saveUninitialized: false,
 //   })
 // );
-console.log(process.env.SESSION_KEY);
-server.use(
-  session({
-    secret: process.env.SESSION_KEY,
-    resave: false,
-    saveUninitialized: false,
-  })
-);
+// console.log(process.env.SESSION_KEY);
+// server.use(
+//   session({
+//     secret: process.env.SESSION_KEY,
+//     resave: false,
+//     saveUninitialized: false,
+//   })
+// );
 
 server.use(passport.authenticate("session"));
 server.use(
