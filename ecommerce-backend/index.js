@@ -82,18 +82,27 @@ server.use(cookieParser());
 
 const memoryStore = new session.MemoryStore();
 
+// server.use(
+//   session({
+//     secret: process.env.SESSION_KEY,
+//     store: memoryStore,
+//     // store: new MongoStore({
+//     //   mongooseConnection: mongoose.connection,
+//     //   collection: "sessions",
+//     // }),
+//     resave: false,
+//     saveUninitialized: false,
+//   })
+// );
+
 server.use(
   session({
     secret: process.env.SESSION_KEY,
-    store: memoryStore,
-    // store: new MongoStore({
-    //   mongooseConnection: mongoose.connection,
-    //   collection: "sessions",
-    // }),
-    resave: false,
-    saveUninitialized: false,
+    resave: false, // don't save session if unmodified
+    saveUninitialized: false, // don't create session until something stored
   })
 );
+
 // console.log(process.env.SESSION_KEY);
 // server.use(
 //   session({
@@ -219,7 +228,7 @@ server.post("/create-payment-intent", async (req, res) => {
     clientSecret: paymentIntent.client_secret,
   });
 });
-console.log(process.env.MONGODB_URL);
+// console.log(process.env.MONGODB_URL);
 async function main() {
   try {
     await mongoose.connect(process.env.MONGODB_URL, {
