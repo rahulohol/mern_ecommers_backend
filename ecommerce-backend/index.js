@@ -25,6 +25,7 @@ const { isAuth, sanitizeUser, cookieExtractor } = require("./services/common");
 const path = require("path");
 const { Order } = require("./model/Order");
 const { env } = require("process");
+const MongoStore = require("connect-mongo")(session);
 
 // Webhook
 
@@ -80,6 +81,9 @@ server.use(cookieParser());
 server.use(
   session({
     secret: process.env.SESSION_KEY,
+    store: new MongoStore({
+      url: process.env.MONGODB_URL,
+    }),
     resave: false, // don't save session if unmodified
     saveUninitialized: false, // don't create session until something stored
   })
