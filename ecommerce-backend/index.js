@@ -26,7 +26,7 @@ const path = require("path");
 const { Order } = require("./model/Order");
 const { env } = require("process");
 const { log } = require("console");
-const MongoStore = require("connect-mongo")(session);
+// const MongoStore = require("connect-mongo")(session);
 
 // Webhook
 
@@ -79,17 +79,17 @@ opts.secretOrKey = process.env.JWT_SECRET_KEY;
 server.use(morgan("dev"));
 // server.use(express.static(path.resolve(__dirname, "build")));
 server.use(cookieParser());
-server.use(
-  session({
-    secret: process.env.SESSION_KEY,
-    store: new MongoStore({
-      mongooseConnection: mongoose.connection,
-      collection: "sessions",
-    }),
-    resave: false,
-    saveUninitialized: false,
-  })
-);
+// server.use(
+//   session({
+//     secret: process.env.SESSION_KEY,
+//     store: new MongoStore({
+//       mongooseConnection: mongoose.connection,
+//       collection: "sessions",
+//     }),
+//     resave: false,
+//     saveUninitialized: false,
+//   })
+// );
 // console.log(process.env.SESSION_KEY);
 // server.use(
 //   session({
