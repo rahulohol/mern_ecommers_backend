@@ -218,11 +218,15 @@ server.post("/create-payment-intent", async (req, res) => {
 main().catch((err) => console.log(err));
 
 async function main() {
-  await mongoose.connect(process.env.MONGODB_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  console.log("database connected");
+  try {
+    await mongoose.connect(process.env.MONGODB_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("database connected");
+  } catch (err) {
+    console.log("error while connecting to db -> ", err);
+  }
 }
 
 server.listen(process.env.PORT, () => {
