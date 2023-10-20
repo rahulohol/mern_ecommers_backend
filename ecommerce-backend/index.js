@@ -83,7 +83,8 @@ server.use(
   session({
     secret: process.env.SESSION_KEY,
     store: new MongoStore({
-      url: process.env.MONGODB_URL,
+      mongooseConnection: mongoose.connection,
+      collection: "sessions",
     }),
     resave: false,
     saveUninitialized: false,
