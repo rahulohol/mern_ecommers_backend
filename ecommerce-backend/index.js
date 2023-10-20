@@ -78,16 +78,25 @@ opts.secretOrKey = process.env.JWT_SECRET_KEY;
 server.use(morgan("dev"));
 // server.use(express.static(path.resolve(__dirname, "build")));
 server.use(cookieParser());
+// server.use(
+//   session({
+//     secret: process.env.SESSION_KEY,
+//     store: new MongoStore({
+//       url: process.env.MONGODB_URL,
+//     }),
+//     resave: false,
+//     saveUninitialized: false,
+//   })
+// );
+
 server.use(
   session({
     secret: process.env.SESSION_KEY,
-    store: new MongoStore({
-      url: process.env.MONGODB_URL,
-    }),
     resave: false,
     saveUninitialized: false,
   })
 );
+
 server.use(passport.authenticate("session"));
 server.use(
   cors({
