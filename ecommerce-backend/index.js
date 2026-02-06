@@ -17,6 +17,7 @@ const usersRouter = require("./routes/Users");
 const authRouter = require("./routes/Auth");
 const cartRouter = require("./routes/Cart");
 const ordersRouter = require("./routes/Order");
+const paymentRouter = require("./routes/Payment");
 const { User } = require("./model/User");
 // const { isAuth, sanitizeUser, cookieExtractor } = require("./services/common");
 
@@ -25,6 +26,11 @@ const { isAuth } = require("./middlewares/auth");
 const path = require("path");
 const { Order } = require("./model/Order");
 const { env } = require("process");
+
+const dns = require('dns');
+// dns.setDefaultResultOrder('ipv4first');
+
+
 
 // Webhook
 
@@ -35,62 +41,67 @@ server.post(
   express.raw({ type: "application/json" }),
   async (request, response) => {
     const sig = request.headers["stripe-signature"];
-
+    
     let event;
-
+    
     try {
       event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
     } catch (err) {
       response.status(400).send(`Webhook Error: ${err.message}`);
       return;
     }
-
+    
     // Handle the event
     switch (event.type) {
       case "payment_intent.succeeded":
         const paymentIntentSucceeded = event.data.object;
-
+        
         const order = await Order.findById(
           paymentIntentSucceeded.metadata.orderId
         );
         order.paymentStatus = "received";
         await order.save();
-
+        
         break;
-      // ... handle other event types
-      default:
-        console.log(`Unhandled event type ${event.type}`);
-    }
-
-    // Return a 200 response to acknowledge receipt of the event
-    response.send();
-  }
-);
-
-// JWT options
-
-// const opts = {};
-// opts.jwtFromRequest = cookieExtractor;
-// opts.secretOrKey = process.env.JWT_SECRET_KEY;
+        // ... handle other event types
+        default:
+          console.log(`Unhandled event type ${event.type}`);
+        }
+        
+        // Return a 200 response to acknowledge receipt of the event
+        response.send();
+      }
+    );
+    
+    // JWT options
+    
+    // const opts = {};
+    // opts.jwtFromRequest = cookieExtractor;
+    // opts.secretOrKey = process.env.JWT_SECRET_KEY;
 
 //middlewares
 server.use(morgan("dev"));
 // server.use(express.static(path.resolve(__dirname, "build")));
 server.use(cookieParser());
 // server.use(
-//   session({
-//     secret: process.env.SESSION_KEY,
-//     resave: false, // don't save session if unmodified
-//     saveUninitialized: false, // don't create session until something stored
-//   })
-// );
-// server.use(passport.authenticate("session"));
-server.use(
-  cors({
-    exposedHeaders: ["X-Total-Count"],
-  })
-);
-server.use(express.json()); // to parse req.body
+  //   session({
+    //     secret: process.env.SESSION_KEY,
+    //     resave: false, // don't save session if unmodified
+    //     saveUninitialized: false, // don't create session until something stored
+    //   })
+    // );
+    // server.use(passport.authenticate("session"));
+    server.use(
+      cors({
+        exposedHeaders: ["X-Total-Count"],
+      })
+    );
+    server.use(express.json()); // to parse req.body
+
+server.use("/payment", paymentRouter.router);
+
+    // server.use("/payment", require("./routes/Payment"));
+    // server.use("/orders", require("./routes/Order"));
 
 server.use("/products", productsRouter.router);
 // we can also use JWT token for client-only auth
@@ -105,78 +116,6 @@ server.use("/orders", isAuth, ordersRouter.router);
 server.get("*", (req, res) =>
   res.sendFile(path.resolve("build", "index.html"))
 );
-
-// // Passport Strategies
-// passport.use(
-//   "local",
-//   new LocalStrategy({ usernameField: "email" }, async function (
-//     email,
-//     password,
-//     done
-//   ) {
-//     // by default passport uses username
-//     console.log({ email, password });
-//     try {
-//       const user = await User.findOne({ email: email });
-//       console.log(email, password, user);
-//       if (!user) {
-//         return done(null, false, { message: "invalid credentials" }); // for safety
-//       }
-//       crypto.pbkdf2(
-//         password,
-//         user.salt,
-//         310000,
-//         32,
-//         "sha256",
-//         async function (err, hashedPassword) {
-//           if (!crypto.timingSafeEqual(user.password, hashedPassword)) {
-//             return done(null, false, { message: "invalid credentials" });
-//           }
-//           const token = jwt.sign(
-//             sanitizeUser(user),
-//             process.env.JWT_SECRET_KEY
-//           );
-//           done(null, { id: user.id, role: user.role, token }); // this lines sends to serializer
-//         }
-//       );
-//     } catch (err) {
-//       done(err);
-//     }
-//   })
-// );
-
-// passport.use(
-//   "jwt",
-//   new JwtStrategy(opts, async function (jwt_payload, done) {
-//     try {
-//       const user = await User.findById(jwt_payload.id);
-//       if (user) {
-//         return done(null, sanitizeUser(user)); // this calls serializer
-//       } else {
-//         return done(null, false);
-//       }
-//     } catch (err) {
-//       return done(err, false);
-//     }
-//   })
-// );
-
-// // this creates session variable req.user on being called from callbacks
-// passport.serializeUser(function (user, cb) {
-//   process.nextTick(function () {
-//     return cb(null, { id: user.id, role: user.role });
-//   });
-// });
-
-// // this changes session variable req.user when called from authorized request
-
-// passport.deserializeUser(function (user, cb) {
-//   process.nextTick(function () {
-//     return cb(null, user);
-//   });
-// });
-
-// Payments
 
 // This is your test secret API key.
 const stripe = require("stripe")(process.env.STRIPE_SERVER_KEY);
@@ -201,13 +140,58 @@ server.post("/create-payment-intent", async (req, res) => {
   });
 });
 
-main().catch((err) => console.log(err));
+// main().catch((err) => console.log(err));
 
-async function main() {
-  await mongoose.connect(process.env.MONGODB_URL);
-  console.log("database connected");
+// async function main() {
+//   await mongoose.connect(process.env.MONGODB_URL);
+//   console.log("database connected");
+// }
+
+// dns.setDefaultResultOrder('verbatim');
+// 
+
+// dns.setDefaultResultOrder('ipv4first');
+// async function main() {
+//   // await mongoose.connect("mongodb://127.0.0.1:27017/ecommerce")
+//   await mongoose.connect(`mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER_URL}/${process.env.MONGODB_DB_NAME}?retryWrites=true&w=majority`)
+// .then(() => console.log('MongoDB connected'))
+//   .catch(err => console.error('MongoDB connection error:', err));
+
+//   // console.log("database connected");
+// }
+// import mongoose from 'mongoose';
+
+//mongodb+srv://rahulohol:<db_password>@cluster0.qyig40b.mongodb.net/?appName=Cluster0
+async function connectDB() {
+  try {
+    await mongoose.connect(
+       `mongodb+srv://${process.env.MONGODB_USERNAME}:` +
+      `${encodeURIComponent(process.env.MONGODB_PASSWORD)}` +
+      `@cluster0.qyig40b.mongodb.net/ecommerce?retryWrites=true&w=majority`,
+      {
+        maxPoolSize: 10,
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+      }
+    );
+
+    console.log('✅ MongoDB connected');
+  } catch (error) {
+    console.error('❌ MongoDB connection failed:', error.message);
+    process.exit(1); // ❗ crash app if DB fails
+  }
 }
+connectDB();
 
-server.listen(process.env.PORT, () => {
-  console.log("server started ", process.env.PORT);
+// export default connectDB;
+
+
+
+// server.listen(process.env.PORT, () => {
+//   console.log("server started ", process.env.PORT);
+// });
+
+
+server.listen(8000, () => {
+  console.log("server started ", 8000);
 });

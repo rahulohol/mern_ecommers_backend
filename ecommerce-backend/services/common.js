@@ -11,7 +11,22 @@ let config = {
   },
 };
 
-let transporter = nodemailer.createTransport(config);
+// let transporter = nodemailer.createTransport(config);
+
+// const nodemailer = require("nodemailer");
+
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // MUST be true for port 465
+  auth: {
+    user: EMAIL,
+    pass: PASSWORD,
+  },
+  tls: {
+    rejectUnauthorized: false, // 🔥 THIS FIXES YOUR ERROR
+  },
+});
 
 // let transporter = nodemailer.createTransport({
 //   host: "smtp.gmail.com",
@@ -40,6 +55,7 @@ exports.cookieExtractor = function (req) {
 };
 
 exports.sendMail = async function ({ to, subject, text, html }) {
+  try {
   let info = await transporter.sendMail({
     from: '"StyleVista" <rahulohol01@gmail.com>', // sender address
     to,
@@ -48,6 +64,9 @@ exports.sendMail = async function ({ to, subject, text, html }) {
     html,
   });
   return info;
+} catch (err) {
+  console.log("Error while sending mail -> ", err);
+}
 };
 
 exports.invoiceTemplate = function (order) {

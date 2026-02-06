@@ -7,7 +7,7 @@ const userSchema = new Schema(
     password: { type: String, required: true },
     imgpath: {
       type: String,
-      required: true,
+      required: false,
     },
     role: { type: String, required: true, default: "user" },
     addresses: { type: [Schema.Types.Mixed] },
