@@ -444,7 +444,7 @@ function orderStatusUpdateTemplate(order, newStatus) {
             <h3>Order Details</h3>
             <p><strong>Order ID:</strong> #${order.id.slice(-12).toUpperCase()}</p>
             <p><strong>Order Date:</strong> ${new Date(order.createdAt).toLocaleDateString('en-IN')}</p>
-            <p><strong>Total Amount:</strong> ₹${Math.round(order.totalAmount * 83).toLocaleString('en-IN')}</p>
+            <p><strong>Total Amount:</strong> ₹${order.totalAmount.toLocaleString('en-IN')}</p>
             ${order.estimatedDelivery ? `<p><strong>Estimated Delivery:</strong> ${new Date(order.estimatedDelivery).toLocaleDateString('en-IN')}</p>` : ''}
           </div>
           
