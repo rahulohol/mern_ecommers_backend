@@ -3,7 +3,7 @@ const { cloudinary } = require("../services/cloudinaryconfig");
 const multer = require("multer");
 const { User } = require("../model/User");
 const bcrypt = require("bcryptjs");
-
+const fs = require("fs"); 
 const crypto = require("crypto");
 const { sanitizeUser, sendMail } = require("../services/common");
 const jwt = require("jsonwebtoken");
@@ -192,14 +192,26 @@ router.post("/signup", upload.single("imageFile"), async (req, res) => {
 
     let imageUrl = null;
 
-    // ✅ Upload image only if provided
-    if (req.file) {
-      const cloudUpload = await cloudinary.uploader.upload(req.file.path);
-      imageUrl = cloudUpload.secure_url;
+    // // ✅ Upload image only if provided
+    // if (req.file) {
+    //   const cloudUpload = await cloudinary.uploader.upload(req.file.path);
+    //   imageUrl = cloudUpload.secure_url;
 
-      // cleanup local file
-      fs.unlinkSync(req.file.path);
-    }
+    //   // cleanup local file
+    //   fs.unlinkSync(req.file.path);
+    // }
+
+    if (req.file) {
+  const cloudUpload = await cloudinary.uploader.upload(req.file.path);
+  imageUrl = cloudUpload.secure_url;
+
+  // cleanup local file with error handling
+  try {
+    fs.unlinkSync(req.file.path);
+  } catch (err) {
+    console.error("Failed to delete local file:", err);
+  }
+}
 
     const user = await User.create({
       email,
