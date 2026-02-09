@@ -6,8 +6,8 @@ const { EMAIL, PASSWORD } = require("../env.js");
 let config = {
   service: "gmail",
   auth: {
-    user: EMAIL,
-    pass: PASSWORD,
+    user: process.env.EMAIL,
+    pass: process.env.PASSWORD,
   },
 };
 
